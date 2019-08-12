@@ -30,6 +30,7 @@ import com.alipay.sofa.rpc.event.ServerReceiveEvent;
 import com.alipay.sofa.rpc.event.ServerSendEvent;
 import com.alipay.sofa.rpc.event.SofaTracerSubscriber;
 import com.alipay.sofa.rpc.ext.Extension;
+import com.alipay.sofa.rpc.strategy.*;
 import com.alipay.sofa.rpc.tracer.Tracer;
 import com.alipay.sofa.rpc.tracer.TracerFactory;
 
@@ -68,15 +69,14 @@ public class SofaTracerModule implements Module {
         Tracer tracer = TracerFactory.getTracer("sofaTracer");
         if (tracer != null) {
             subscriber = new SofaTracerSubscriber();
-            EventBus.register(ClientStartInvokeEvent.class, subscriber);
-            EventBus.register(ClientBeforeSendEvent.class, subscriber);
-            EventBus.register(ClientAfterSendEvent.class, subscriber);
-            EventBus.register(ServerReceiveEvent.class, subscriber);
-            EventBus.register(ServerSendEvent.class, subscriber);
-            EventBus.register(ServerEndHandleEvent.class, subscriber);
-            EventBus.register(ClientSyncReceiveEvent.class, subscriber);
-            EventBus.register(ClientAsyncReceiveEvent.class, subscriber);
-            EventBus.register(ClientEndInvokeEvent.class, subscriber);
+
+            EventBus.register(ClientStartInvokeEvent.class, subscriber,new StartRpcTracerStrategy());
+            EventBus.register(ClientBeforeSendEvent.class, subscriber,new ClientBeforeSendTracerStrategy());
+            EventBus.register(ServerReceiveEvent.class, subscriber,new ServerReceiveTracerStrategy());
+            EventBus.register(ServerSendEvent.class, subscriber,new ServerSendTracerStrategy());
+            EventBus.register(ServerEndHandleEvent.class, subscriber,new ServerEndHandleTracerStrategy());
+            EventBus.register(ClientAsyncReceiveEvent.class, subscriber,new ClientAsyncReceiveTracerStrategy());
+            EventBus.register(ClientEndInvokeEvent.class, subscriber,new ClientEndInvokeTracerStategy());
         }
     }
 
@@ -85,11 +85,9 @@ public class SofaTracerModule implements Module {
         if (subscriber != null) {
             EventBus.unRegister(ClientStartInvokeEvent.class, subscriber);
             EventBus.unRegister(ClientBeforeSendEvent.class, subscriber);
-            EventBus.unRegister(ClientAfterSendEvent.class, subscriber);
             EventBus.unRegister(ServerReceiveEvent.class, subscriber);
             EventBus.unRegister(ServerSendEvent.class, subscriber);
             EventBus.unRegister(ServerEndHandleEvent.class, subscriber);
-            EventBus.unRegister(ClientSyncReceiveEvent.class, subscriber);
             EventBus.unRegister(ClientAsyncReceiveEvent.class, subscriber);
             EventBus.unRegister(ClientEndInvokeEvent.class, subscriber);
         }

@@ -27,6 +27,8 @@ import com.alipay.sofa.rpc.event.rest.RestServerSendEvent;
 import com.alipay.sofa.rpc.ext.Extension;
 import com.alipay.sofa.rpc.server.rest.TraceRequestFilter;
 import com.alipay.sofa.rpc.server.rest.TraceResponseFilter;
+import com.alipay.sofa.rpc.strategy.RestServerReceiveTracerStrategy;
+import com.alipay.sofa.rpc.strategy.RestServerSendTracerStrategy;
 import com.alipay.sofa.rpc.tracer.Tracer;
 import com.alipay.sofa.rpc.tracer.TracerFactory;
 import com.alipay.sofa.rpc.transport.rest.TraceClientRequestFilter;
@@ -78,8 +80,8 @@ public class RestTracerModule implements Module {
         Tracer tracer = TracerFactory.getTracer("sofaTracer");
         if (tracer != null) {
             subscriber = new RestTracerSubscriber();
-            EventBus.register(RestServerReceiveEvent.class, subscriber);
-            EventBus.register(RestServerSendEvent.class, subscriber);
+            EventBus.register(RestServerReceiveEvent.class, subscriber,new RestServerReceiveTracerStrategy());
+            EventBus.register(RestServerSendEvent.class, subscriber,new RestServerSendTracerStrategy());
         }
         // 注册Tracer相关类
         JAXRSProviderManager.registerInternalProviderClass(TraceRequestFilter.class);

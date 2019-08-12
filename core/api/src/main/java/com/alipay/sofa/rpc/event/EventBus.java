@@ -23,6 +23,7 @@ import com.alipay.sofa.rpc.context.AsyncRuntime;
 import com.alipay.sofa.rpc.context.RpcInternalContext;
 import com.alipay.sofa.rpc.log.Logger;
 import com.alipay.sofa.rpc.log.LoggerFactory;
+import com.alipay.sofa.rpc.strategy.AbstractStrategy;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -76,7 +77,7 @@ public class EventBus {
      * @param eventClass 事件类型
      * @param subscriber 订阅者
      */
-    public static void register(Class<? extends Event> eventClass, Subscriber subscriber) {
+    public static void register(Class<? extends Event> eventClass, Subscriber subscriber, AbstractStrategy strategy ) {
         CopyOnWriteArraySet<Subscriber> set = SUBSCRIBER_MAP.get(eventClass);
         if (set == null) {
             set = new CopyOnWriteArraySet<Subscriber>();
@@ -86,6 +87,7 @@ public class EventBus {
             }
         }
         set.add(subscriber);
+        subscriber.addStrategy(ClientStartInvokeEvent.class, strategy);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Register subscriber: {} of event: {}.", subscriber, eventClass);
         }

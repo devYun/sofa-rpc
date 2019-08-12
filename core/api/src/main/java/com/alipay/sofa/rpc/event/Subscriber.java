@@ -16,6 +16,13 @@
  */
 package com.alipay.sofa.rpc.event;
 
+import com.alipay.sofa.rpc.strategy.AbstractStrategy;
+import com.alipay.sofa.rpc.tracer.Tracers;
+
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * Subscriber of event.
  *
@@ -23,6 +30,8 @@ package com.alipay.sofa.rpc.event;
  * @see EventBus
  */
 public abstract class Subscriber {
+
+    private static final ConcurrentMap<Class<? extends Event>, AbstractStrategy> STRATEGY_MAP = new ConcurrentHashMap<>();
     /**
      * 接到事件是否同步执行
      */
@@ -57,6 +66,31 @@ public abstract class Subscriber {
      *
      * @param event 事件
      */
-    public abstract void onEvent(Event event);
+    public void onEvent(Event event){
+        if (openEvent()) {
+            return;
+        }
+
+        AbstractStrategy strategy = getStrategy(event.getClass());
+        if (Objects.nonNull(strategy)) {
+            strategy.run(event);
+        }
+    }
+
+    /**
+     * 是否开启事件处理
+     * @return
+     */
+    protected abstract boolean openEvent();
+
+
+    public void addStrategy(Class<? extends Event> clazz,  AbstractStrategy strategy) {
+        STRATEGY_MAP.put(clazz, strategy);
+    }
+
+    public AbstractStrategy getStrategy(Class<? extends Event> clazz ) {
+        return STRATEGY_MAP.get(clazz);
+    }
+
 
 }

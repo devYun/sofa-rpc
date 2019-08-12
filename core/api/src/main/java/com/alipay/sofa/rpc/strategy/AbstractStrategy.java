@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alipay.sofa.rpc.event;
+package com.alipay.sofa.rpc.strategy;
+
+import com.alipay.sofa.rpc.event.Event;
 
 /**
- * @author <a href="mailto:zhanggeng.zg@antfin.com">zhanggeng</a>
+ * @author <a href="mailto:a413650185@gmail.com">luozhiyun</a>
  */
-public class RestTracerSubscriber extends Subscriber {
+public abstract class AbstractStrategy {
 
-    @Override
-    public void onEvent(Event originEvent) {
-        super.onEvent(originEvent);
-    }
-
+    /**
+     * 执行策略
+     * @param originEvent 事件
+     */
+    public abstract void run(Event originEvent);
 }
