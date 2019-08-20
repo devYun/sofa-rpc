@@ -58,17 +58,17 @@ public class DubboServerMain {
             .setServer(serverConfig)
             .setRegister(false);
 
-        ProviderConfig<EchoService> providerConfig2 = new ProviderConfig<EchoService>()
-            .setInterfaceId(EchoService.class.getName())
-            .setRef(new EchoServiceImpl())
-            .setApplication(applicationConfig)
-            .setBootstrap("dubbo")
-            .setUniqueId("xxx")
-            .setServer(serverConfig)
-            .setRegister(false);
+        //ProviderConfig<EchoService> providerConfig2 = new ProviderConfig<EchoService>()
+        //    .setInterfaceId(EchoService.class.getName())
+        //    .setRef(new EchoServiceImpl())
+        //    .setApplication(applicationConfig)
+        //    .setBootstrap("dubbo")
+        //    .setUniqueId("xxx")
+        //    .setServer(serverConfig)
+        //    .setRegister(false);
 
         providerConfig.export();
-        providerConfig2.export();
+        //providerConfig2.export();
 
         LOGGER.warn("started at pid {}", RpcRuntimeContext.PID);
 

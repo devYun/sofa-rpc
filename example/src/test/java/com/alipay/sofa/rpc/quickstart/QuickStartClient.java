@@ -33,7 +33,7 @@ public class QuickStartClient {
             .setInterfaceId(HelloService.class.getName()) // 指定接口
             .setProtocol("bolt") // 指定协议
             .setDirectUrl("bolt://127.0.0.1:12200") // 指定直连地址
-            .setConnectTimeout(10 * 1000);
+            .setConnectTimeout(10 * 1000).setSerialization("json");;
 
         HelloService helloService = consumerConfig.refer();
 

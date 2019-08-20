@@ -80,7 +80,7 @@ public class LookoutSubscriber extends Subscriber {
 
             rpcMetrics.collectThreadPool(serverStartedEvent.getServerConfig(),
                 serverStartedEvent.getThreadPoolExecutor());
-
+        //TODO 这个事件没有注册
         } else if (eventClass == ServerStoppedEvent.class) {
             ServerStoppedEvent serverStartedEvent = (ServerStoppedEvent) event;
 

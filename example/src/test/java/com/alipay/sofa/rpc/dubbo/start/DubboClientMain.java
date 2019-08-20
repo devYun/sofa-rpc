@@ -52,15 +52,15 @@ public class DubboClientMain {
             .setTimeout(3000);
         HelloService helloService = consumerConfig.refer();
 
-        ConsumerConfig<EchoService> consumerConfig2 = new ConsumerConfig<EchoService>()
-            .setApplication(applicationConfig)
-            .setInterfaceId(EchoService.class.getName())
-            .setBootstrap("dubbo")
-            .setUniqueId("xxx")
-            .setDirectUrl("dubbo://127.0.0.1:20080")
-            .setRegister(false)
-            .setTimeout(3000);
-        EchoService echoService = consumerConfig2.refer();
+        //ConsumerConfig<EchoService> consumerConfig2 = new ConsumerConfig<EchoService>()
+        //    .setApplication(applicationConfig)
+        //    .setInterfaceId(EchoService.class.getName())
+        //    .setBootstrap("dubbo")
+        //    .setUniqueId("xxx")
+        //    .setDirectUrl("dubbo://127.0.0.1:20080")
+        //    .setRegister(false)
+        //    .setTimeout(3000);
+        //EchoService echoService = consumerConfig2.refer();
 
         LOGGER.error("started at pid {}", RpcRuntimeContext.PID);
 

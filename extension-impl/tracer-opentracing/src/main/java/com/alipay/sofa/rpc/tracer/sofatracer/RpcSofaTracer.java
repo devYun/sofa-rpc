@@ -79,17 +79,22 @@ public class RpcSofaTracer extends Tracer {
         //构造 client 的日志打印实例
         SpanEncoder<SofaTracerSpan> clientEncoder = getClientSpanEncoder();
         SofaTracerStatisticReporter clientStats = generateClientStatReporter(RpcTracerLogEnum.RPC_CLIENT_STAT);
+        //默认构造的是 DiskReporterImpl 实例
         Reporter clientReporter = generateReporter(clientStats, RpcTracerLogEnum.RPC_CLIENT_DIGEST, clientEncoder);
 
         //构造 server 的日志打印实例
         SpanEncoder<SofaTracerSpan> serverEncoder = getServerSpanEncoder();
         SofaTracerStatisticReporter serverStats = generateServerStatReporter(RpcTracerLogEnum.RPC_SERVER_STAT);
+        //默认构造的是 DiskReporterImpl 实例
         Reporter serverReporter = generateReporter(serverStats, RpcTracerLogEnum.RPC_SERVER_DIGEST, serverEncoder);
 
         //构造 RPC 的 tracer 实例
+        //设置tracer type是RPC_TRACER
         sofaTracer = new SofaTracer.Builder(RPC_TRACER_TYPE)
-            .withClientReporter(clientReporter).withServerReporter(serverReporter)
-            .build();
+                //为sofaTracer设置客户端Reporter和服务端Reporter
+                .withClientReporter(clientReporter).withServerReporter(serverReporter)
+                //new sofaTracer实例
+                .build();
     }
 
     protected SpanEncoder<SofaTracerSpan> getClientSpanEncoder() {
@@ -103,7 +108,9 @@ public class RpcSofaTracer extends Tracer {
     protected SofaTracerStatisticReporter generateClientStatReporter(RpcTracerLogEnum statRpcTracerLogEnum) {
         //构造统计实例
         String statLog = statRpcTracerLogEnum.getDefaultLogName();
+        //默认是yyyy-MM-dd
         String statRollingPolicy = SofaTracerConfiguration.getRollingPolicy(statRpcTracerLogEnum.getRollingKey());
+        //获取日志保留天数 ：默认7
         String statLogReserveConfig = SofaTracerConfiguration.getLogReserveConfig(statRpcTracerLogEnum
             .getLogReverseKey());
         //client
@@ -128,7 +135,7 @@ public class RpcSofaTracer extends Tracer {
         String digestRollingPolicy = SofaTracerConfiguration.getRollingPolicy(digestRpcTracerLogEnum.getRollingKey());
         String digestLogReserveConfig = SofaTracerConfiguration.getLogReserveConfig(digestRpcTracerLogEnum
             .getLogReverseKey());
-        //构造实例
+        //构造实例 DiskReporterImpl
         Reporter reporter = ReporterFactory.build(digestLog, digestRollingPolicy,
             digestLogReserveConfig, spanEncoder, statReporter);
         return reporter;
@@ -138,26 +145,37 @@ public class RpcSofaTracer extends Tracer {
     public void startRpc(SofaRequest request) {
         //客户端的启动
         SofaTraceContext sofaTraceContext = SofaTraceContextHolder.getSofaTraceContext();
+        //第一次pop的时候是空的
         SofaTracerSpan serverSpan = sofaTraceContext.pop();
 
+        //新建一个clientSpan
+        //buildSpan 设置operationName
         SofaTracerSpan clientSpan = (SofaTracerSpan) this.sofaTracer.buildSpan(request.getInterfaceName())
-            .asChildOf(serverSpan)
-            .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
-            .start();
+                //用来设置references参数
+                .asChildOf(serverSpan)
+                //设置span.kind 为client
+                .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT)
+                //创建span
+                .start();
 
+        //如果允许线程上下文携带自定义参数
         if (RpcInternalContext.isAttachmentEnable()) {
             RpcInternalContext context = RpcInternalContext.getContext();
+            //设置local.app
             clientSpan
-                .setTag(RpcSpanTags.LOCAL_APP, (String) context.getAttachment(RpcConstants.INTERNAL_KEY_APP_NAME));
+                    .setTag(RpcSpanTags.LOCAL_APP, (String) context.getAttachment(RpcConstants.INTERNAL_KEY_APP_NAME));
+            //设置protocol
             clientSpan.setTag(RpcSpanTags.PROTOCOL,
-                (String) context.getAttachment(RpcConstants.INTERNAL_KEY_PROTOCOL_NAME));
+                    (String) context.getAttachment(RpcConstants.INTERNAL_KEY_PROTOCOL_NAME));
             SofaTracerSpanContext spanContext = clientSpan.getSofaTracerSpanContext();
+
+            //设置trace_id 和 span_id
             if (spanContext != null) {
                 context.setAttachment(RpcConstants.INTERNAL_KEY_TRACE_ID, spanContext.getTraceId());
                 context.setAttachment(RpcConstants.INTERNAL_KEY_SPAN_ID, spanContext.getSpanId());
             }
         }
-
+        //设置service，method，和threadName
         clientSpan.setTag(RpcSpanTags.SERVICE, request.getTargetServiceUniqueName());
         clientSpan.setTag(RpcSpanTags.METHOD, request.getMethodName());
         clientSpan.setTag(RpcSpanTags.CURRENT_THREAD_NAME, Thread.currentThread().getName());
@@ -226,6 +244,7 @@ public class RpcSofaTracer extends Tracer {
             }
             //将当前 span 缓存在 request 中,注意:这个只是缓存不需要序列化到服务端
             rpcInternalContext.setAttachment(RpcConstants.INTERNAL_KEY_TRACER_SPAN, clientSpan);
+            //这个时候ParentSofaTracerSpan为null，所以如果是异步的sofaTraceContext里面目前就没有span了
             if (clientSpan != null && clientSpan.getParentSofaTracerSpan() != null) {
                 //restore parent
                 sofaTraceContext.push(clientSpan.getParentSofaTracerSpan());
@@ -265,21 +284,26 @@ public class RpcSofaTracer extends Tracer {
         RpcInternalContext context = null;
         if (RpcInternalContext.isAttachmentEnable()) {
             context = RpcInternalContext.getContext();
-
+            //记录路由方式
             if (!clientSpan.getTagsWithStr().containsKey(RpcSpanTags.ROUTE_RECORD)) {
                 clientSpan.setTag(RpcSpanTags.ROUTE_RECORD,
                     (String) context.getAttachment(RpcConstants.INTERNAL_KEY_ROUTER_RECORD));
             }
+            //客户端请求序列化时间
             clientSpan.setTag(RpcSpanTags.REQ_SERIALIZE_TIME,
-                (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_REQ_SERIALIZE_TIME));
+                    (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_REQ_SERIALIZE_TIME));
+            //客户端接收响应反序列化时间
             clientSpan.setTag(RpcSpanTags.RESP_DESERIALIZE_TIME,
                 (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_RESP_DESERIALIZE_TIME));
+            //响应大小
             clientSpan.setTag(RpcSpanTags.RESP_SIZE,
                 (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_RESP_SIZE));
+            //请求大小
             clientSpan.setTag(RpcSpanTags.REQ_SIZE, (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_REQ_SIZE));
+            //客户端创建长连接时间
             clientSpan.setTag(RpcSpanTags.CLIENT_CONN_TIME,
                 (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_CONN_CREATE_TIME));
-
+            //客户端总耗时，如果是同步调用则AbstractCluster#doSendMsg中调用，异步则在callback调用
             Long ce = (Long) context.getAttachment(RpcConstants.INTERNAL_KEY_CLIENT_ELAPSE);
             if (ce != null) {
                 clientSpan.setTag(RpcSpanTags.CLIENT_ELAPSE_TIME, ce);
@@ -405,11 +429,14 @@ public class RpcSofaTracer extends Tracer {
         //server tags 必须设置
         tags.put(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER);
 
+        //根据调用端去拿参数
         String spanStrs = (String) request.getRequestProp(RemotingConstants.NEW_RPC_TRACE_NAME);
         SofaTracerSpanContext spanContext = null;
+        //如果为空，说明是老的版本
         if (StringUtils.isBlank(spanStrs)) {
             //老
             Object oldInstanceMap = request.getRequestProp(RemotingConstants.RPC_TRACE_NAME);
+            //根据oldInstanceMap给tags设值，并创建SofaTracerSpanContext实例
             spanContext = this.saveSpanContextAndTags(tags, oldInstanceMap);
         } else {
             //新
@@ -417,6 +444,7 @@ public class RpcSofaTracer extends Tracer {
         }
         if (spanContext == null) {
             SelfLog.error("SpanContext created error when server received and root SpanContext created.");
+            //创建一个SofaTracerSpanContext实例
             spanContext = SofaTracerSpanContext.rootStart();
         }
 
@@ -491,11 +519,15 @@ public class RpcSofaTracer extends Tracer {
         serverSpan.log(LogData.SERVER_SEND_EVENT_VALUE);
 
         RpcInternalContext context = RpcInternalContext.getContext();
+        //响应序列化时间
         serverSpan.setTag(RpcSpanTags.RESP_SERIALIZE_TIME,
             (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_RESP_SERIALIZE_TIME));
+        //请求反序列化时间
         serverSpan.setTag(RpcSpanTags.REQ_DESERIALIZE_TIME,
             (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_REQ_DESERIALIZE_TIME));
+        //响应序列化大小
         serverSpan.setTag(RpcSpanTags.RESP_SIZE, (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_RESP_SIZE));
+        //请求反序列化大小
         serverSpan.setTag(RpcSpanTags.REQ_SIZE, (Number) context.getAttachment(RpcConstants.INTERNAL_KEY_REQ_SIZE));
         //当前线程名
         serverSpan.setTag(RpcSpanTags.CURRENT_THREAD_NAME, Thread.currentThread().getName());
@@ -544,6 +576,7 @@ public class RpcSofaTracer extends Tracer {
         }
         // 结果码（00=成功/01=业务异常/02=RPC逻辑错误）
         serverSpan.setTag(RpcSpanTags.RESULT_CODE, resultCode);
+        //异步打印日志落盘
         serverSpan.finish();
     }
 
@@ -591,6 +624,7 @@ public class RpcSofaTracer extends Tracer {
         //tracer 上下文
         SofaTraceContext sofaTraceContext = SofaTraceContextHolder.getSofaTraceContext();
         if (rpcInternalContext.isConsumerSide()) {
+            //TODO 这个校验没有意义，sofaTraceContext.getThreadLocalSpanSize只能返回0或1
             //客户端 tracer 堆栈中最多有 1 个(客户端 span 完毕,服务端 span 压栈所以最多一个)
             if (sofaTraceContext.getThreadLocalSpanSize() > 1) {
                 SelfLog.error("Pay attention,stack size error.Tracer consumer stack size more than one.");

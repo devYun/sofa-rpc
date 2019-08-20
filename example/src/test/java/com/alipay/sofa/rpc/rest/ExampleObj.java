@@ -45,4 +45,12 @@ public class ExampleObj implements Serializable {
         this.name = name;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "ExampleObj{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

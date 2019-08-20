@@ -59,6 +59,7 @@ public class RpcLookout {
     public void collectClient(RpcClientLookoutModel rpcClientMetricsModel) {
 
         try {
+            //维度已经到了消费者的方法了
             Id methodConsumerId = createMethodConsumerId(rpcClientMetricsModel);
             MixinMetric methodConsumerMetric = Lookout.registry().mixinMetric(methodConsumerId);
 
@@ -79,6 +80,7 @@ public class RpcLookout {
     public void collectServer(RpcServerLookoutModel rpcServerMetricsModel) {
 
         try {
+            //到了服务端方法的维度
             Id methodProviderId = createMethodProviderId(rpcServerMetricsModel);
             MixinMetric methodProviderMetric = Lookout.registry().mixinMetric(methodProviderId);
 
@@ -191,7 +193,7 @@ public class RpcLookout {
 
         Long requestSize = model.getRequestSize();
         Long responseSize = model.getResponseSize();
-
+        //TODO model是局部变量，为啥还要重新再get一下？
         if (requestSize != null) {
             DistributionSummary requestSizeDS = mixinMetric.distributionSummary("request_size");
             requestSizeDS.record(model.getRequestSize());

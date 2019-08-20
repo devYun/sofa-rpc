@@ -28,7 +28,8 @@ public class QuickStartServer {
         ServerConfig serverConfig = new ServerConfig()
             .setProtocol("bolt") // 设置一个协议，默认bolt
             .setPort(12200) // 设置一个端口，默认12200
-            .setDaemon(false); // 非守护线程
+            .setDaemon(false)
+            .setSerialization("json"); // 非守护线程
 
         ProviderConfig<HelloService> providerConfig = new ProviderConfig<HelloService>()
             .setInterfaceId(HelloService.class.getName()) // 指定接口
