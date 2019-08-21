@@ -17,6 +17,7 @@
 package com.alipay.sofa.rpc.quickstart;
 
 import com.alipay.sofa.rpc.config.ConsumerConfig;
+import com.alipay.sofa.rpc.context.RpcInvokeContext;
 import com.alipay.sofa.rpc.log.Logger;
 import com.alipay.sofa.rpc.log.LoggerFactory;
 
@@ -35,9 +36,12 @@ public class QuickStartClient {
             .setDirectUrl("bolt://127.0.0.1:12200") // 指定直连地址
             .setConnectTimeout(10 * 1000).setSerialization("json");;
 
+        RpcInvokeContext.getContext().putRequestBaggage("req_bag", "a2bbb");
+
         HelloService helloService = consumerConfig.refer();
 
         while (true) {
+            System.out.println("service receive reqBag -> " + RpcInvokeContext.getContext().getResponseBaggage("req_bag"));
             try {
                 LOGGER.info(helloService.sayHello("world"));
             } catch (Exception e) {

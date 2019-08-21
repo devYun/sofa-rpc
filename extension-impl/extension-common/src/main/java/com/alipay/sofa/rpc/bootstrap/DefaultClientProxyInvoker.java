@@ -144,6 +144,7 @@ public class DefaultClientProxyInvoker extends ClientProxyInvoker {
             invokeCtx = RpcInvokeContext.getContext();
             invokeCtx.setFuture(future);
         }
+        //如果开启了透传
         if (RpcInvokeContext.isBaggageEnable()) {
             BaggageResolver.pickupFromResponse(invokeCtx, response, true);
         }

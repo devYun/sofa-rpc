@@ -41,6 +41,7 @@ public class ProviderBaggageFilter extends Filter {
     public SofaResponse invoke(FilterInvoker invoker, SofaRequest request) throws SofaRpcException {
         SofaResponse response = null;
         try {
+            //从request中获取透传数据存入到requestBaggage中
             BaggageResolver.pickupFromRequest(RpcInvokeContext.peekContext(), request, true);
             response = invoker.invoke(request);
         } finally {

@@ -121,6 +121,7 @@ public class BaggageResolver {
                     if (context == null) {
                         context = RpcInvokeContext.getContext();
                     }
+                    //因为entry的key里面会包含rpc_resp_baggage，所以需要截取掉
                     context.putResponseBaggage(entry.getKey().substring(prefix.length()),
                         entry.getValue());
                 }
