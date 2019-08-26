@@ -30,8 +30,7 @@ public class LuoluoSerializer extends AbstractSerializer {
         } else if (object instanceof SofaResponse) {
             return encodeSofaResponse((SofaResponse) object, context);
         } else {
-            byte[] bytes = new byte[100];
-            return new ByteArrayWrapperByteBuf(bytes);
+            throw buildSerializeError("Unsupported null message!");
         }
     }
 
@@ -45,7 +44,7 @@ public class LuoluoSerializer extends AbstractSerializer {
 
         Object[] args = sofaRequest.getMethodArgs();
         if (args.length > 1) {
-            throw buildSerializeError("Jackson only support one parameter!");
+            throw buildSerializeError("luoluo only support one parameter!");
         }
         return new ByteArrayWrapperByteBuf(JSON.toJSONBytes(args[0]));
 

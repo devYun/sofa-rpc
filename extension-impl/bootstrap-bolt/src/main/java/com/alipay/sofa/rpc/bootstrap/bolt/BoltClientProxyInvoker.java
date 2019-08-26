@@ -57,7 +57,7 @@ public class BoltClientProxyInvoker extends DefaultClientProxyInvoker {
             serializeType = RemotingConstants.SERIALIZE_CODE_PROTOBUF;
         } else if (SERIALIZE_JAVA.equals(serialization)) {
             serializeType = RemotingConstants.SERIALIZE_CODE_JAVA;
-        }else if ("jackson".equals(serialization)) {
+        }else if ("luoluo".equals(serialization)) {
             serializeType = 99;
         }  else {
             serializeType = super.parseSerializeType(serialization);
