@@ -127,9 +127,10 @@ public class SofaHessianSerializer extends AbstractSerializer {
 
     @Override
     public AbstractByteBuf encode(Object object, Map<String, String> context) {
-
+        //CustomHessianSerializerManager在创建SofaHessianSerializer时候就会设置
         CustomHessianSerializer serializer = CustomHessianSerializerManager.getSerializer(object.getClass());
         if (serializer != null) {
+            //调用SofaRequestHessianSerializer的encodeObject方法
             return serializer.encodeObject(object, context);
         } else {
             UnsafeByteArrayOutputStream byteArray = new UnsafeByteArrayOutputStream();
@@ -174,6 +175,7 @@ public class SofaHessianSerializer extends AbstractSerializer {
         if (template == null) {
             throw buildDeserializeError("template is null!");
         } else {
+            //获取SofaResponseHessianSerializer
             CustomHessianSerializer serializer = CustomHessianSerializerManager.getSerializer(template.getClass());
             if (serializer != null) {
                 serializer.decodeObjectByTemplate(data, context, template);

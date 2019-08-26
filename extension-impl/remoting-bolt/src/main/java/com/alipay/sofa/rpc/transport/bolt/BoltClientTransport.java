@@ -94,6 +94,7 @@ public class BoltClientTransport extends ClientTransport {
 
     static {
         RPC_CLIENT.init();
+        //注册序列化器
         SofaRpcSerializationRegister.registerCustomSerializer();
     }
 

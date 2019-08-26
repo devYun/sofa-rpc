@@ -349,6 +349,7 @@ public class AllConnectConnectionHolder extends ConnectionHolder {
     @Override
     public void updateProviders(ProviderGroup providerGroup) {
         try {
+            //如果没有可以调用的provider，那么关闭连接
             if (ProviderHelper.isEmpty(providerGroup)) {
                 if (CommonUtils.isNotEmpty(currentProviderList())) {
                     if (LOGGER.isInfoEnabled(consumerConfig.getAppName())) {
@@ -358,6 +359,7 @@ public class AllConnectConnectionHolder extends ConnectionHolder {
                     closeAllClientTransports(null);
                 }
             } else {
+                //获取当前的Provider列表
                 Collection<ProviderInfo> nowall = currentProviderList();
                 List<ProviderInfo> oldAllP = providerGroup.getProviderInfos();
                 List<ProviderInfo> nowAllP = new ArrayList<ProviderInfo>(nowall);// 当前全部
@@ -367,9 +369,11 @@ public class AllConnectConnectionHolder extends ConnectionHolder {
                 List<ProviderInfo> needAdd = diff.getOnlyOnLeft(); // 需要新建
                 List<ProviderInfo> needDelete = diff.getOnlyOnRight(); // 需要删掉
                 if (!needAdd.isEmpty()) {
+                    //oldAllP集合里面独有的provider，需要新建
                     addNode(needAdd);
                 }
                 if (!needDelete.isEmpty()) {
+                    //这里是把原本老的provider有，但是现在已经没有的节点去掉
                     removeNode(needDelete);
                 }
             }
@@ -384,6 +388,7 @@ public class AllConnectConnectionHolder extends ConnectionHolder {
 
     @Override
     public void updateAllProviders(List<ProviderGroup> providerGroups) {
+        //providerGroups里面的provider都聚合在一起
         List<ProviderInfo> mergePs = new ArrayList<ProviderInfo>();
         if (CommonUtils.isNotEmpty(providerGroups)) {
             for (ProviderGroup providerGroup : providerGroups) {
@@ -410,6 +415,7 @@ public class AllConnectConnectionHolder extends ConnectionHolder {
             // 多线程建立连接
             int threads = Math.min(10, providerSize); // 最大10个
             final CountDownLatch latch = new CountDownLatch(providerSize);
+            //建立一个固定大小的线程池，用来负责异步建立连接
             ThreadPoolExecutor initPool = new ThreadPoolExecutor(threads, threads,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(providerInfoList.size()),
@@ -421,7 +427,7 @@ public class AllConnectConnectionHolder extends ConnectionHolder {
 
             try {
                 int totalTimeout = ((providerSize % threads == 0) ? (providerSize / threads) : ((providerSize /
-                    threads) + 1)) * connectTimeout + 500;
+                        threads) + 1)) * connectTimeout + 500;
                 latch.await(totalTimeout, TimeUnit.MILLISECONDS); // 一直等到子线程都结束
             } catch (InterruptedException e) {
                 LOGGER.errorWithApp(appName, "Exception when add provider", e);
@@ -436,6 +442,7 @@ public class AllConnectConnectionHolder extends ConnectionHolder {
      */
     protected void initClientRunnable(ThreadPoolExecutor initPool, final CountDownLatch latch,
                                       final ProviderInfo providerInfo) {
+        //把provider封装成ClientTransportConfig
         final ClientTransportConfig config = providerToClientConfig(providerInfo);
         initPool.execute(new Runnable() {
             @Override

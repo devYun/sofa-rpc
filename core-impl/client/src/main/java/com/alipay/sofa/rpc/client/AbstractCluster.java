@@ -128,7 +128,7 @@ public abstract class AbstractCluster extends Cluster {
         loadBalancer = LoadBalancerFactory.getLoadBalancer(consumerBootstrap);
         // 地址管理器
         addressHolder = AddressHolderFactory.getAddressHolder(consumerBootstrap);
-        // 连接管理器
+        // 连接管理器  默认是AllConnectConnectionHolder
         connectionHolder = ConnectionHolderFactory.getConnectionHolder(consumerBootstrap);
         // 构造Filter链,最底层是调用过滤器
         this.filterChain = FilterChain.buildConsumerChain(this.consumerConfig,
@@ -225,31 +225,36 @@ public abstract class AbstractCluster extends Cluster {
 
     @Override
     public void updateAllProviders(List<ProviderGroup> providerGroups) {
+        //获取所有的服务组
         List<ProviderGroup> oldProviderGroups = new ArrayList<ProviderGroup>(addressHolder.getProviderGroups());
         int count = 0;
         if (providerGroups != null) {
             for (ProviderGroup providerGroup : providerGroups) {
+                //检验providerGroup
                 checkProviderInfo(providerGroup);
                 count += providerGroup.size();
             }
         }
+        //如果没有检测到provider，那么就打印日志，关闭连接
         if (count == 0) {
             Collection<ProviderInfo> currentProviderList = currentProviderList();
             addressHolder.updateAllProviders(providerGroups);
             if (CommonUtils.isNotEmpty(currentProviderList)) {
                 if (LOGGER.isWarnEnabled(consumerConfig.getAppName())) {
                     LOGGER.warnWithApp(consumerConfig.getAppName(), "Provider list is emptied, may be all " +
-                        "providers has been closed, or this consumer has been add to blacklist");
+                            "providers has been closed, or this consumer has been add to blacklist");
                     closeTransports();
                 }
             }
         } else {
+            //根据传入的provider来分组
             addressHolder.updateAllProviders(providerGroups);
+            //
             connectionHolder.updateAllProviders(providerGroups);
         }
         if (EventBus.isEnable(ProviderInfoUpdateAllEvent.class)) {
             ProviderInfoUpdateAllEvent event = new ProviderInfoUpdateAllEvent(consumerConfig, oldProviderGroups,
-                providerGroups);
+                    providerGroups);
             EventBus.post(event);
         }
     }

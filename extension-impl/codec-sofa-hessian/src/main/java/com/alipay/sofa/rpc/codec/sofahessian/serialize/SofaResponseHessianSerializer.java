@@ -49,7 +49,8 @@ public class SofaResponseHessianSerializer extends AbstractCustomHessianSerializ
             Hessian2Input input = new Hessian2Input(inputStream);
             // 根据SerializeType信息决定序列化器
             boolean genericSerialize = context != null && isGenericResponse(
-                context.get(RemotingConstants.HEAD_GENERIC_TYPE));
+                    context.get(RemotingConstants.HEAD_GENERIC_TYPE));
+            //是否泛化调用
             if (genericSerialize) {
                 input.setSerializerFactory(genericSerializerFactory);
                 GenericObject genericObject = (GenericObject) input.readObject();

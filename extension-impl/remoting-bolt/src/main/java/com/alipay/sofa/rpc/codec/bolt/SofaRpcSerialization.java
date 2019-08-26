@@ -176,23 +176,27 @@ public class SofaRpcSerialization extends DefaultCustomSerializer {
         if (request instanceof RpcRequestCommand) {
             RpcRequestCommand requestCommand = (RpcRequestCommand) request;
             Object requestObject = requestCommand.getRequestObject();
+            //获取序列化方式
             byte serializerCode = requestCommand.getSerializer();
             try {
                 Map<String, String> header = (Map<String, String>) requestCommand.getRequestHeader();
                 if (header == null) {
                     header = new HashMap<String, String>();
                 }
+                //设置是否泛化调用
                 putKV(header, RemotingConstants.HEAD_GENERIC_TYPE,
                     (String) invokeContext.get(RemotingConstants.HEAD_GENERIC_TYPE));
-
+                //获取序列化具体实现
                 Serializer rpcSerializer = com.alipay.sofa.rpc.codec.SerializerFactory
                     .getSerializer(serializerCode);
+                //编码
                 AbstractByteBuf byteBuf = rpcSerializer.encode(requestObject, header);
                 request.setContent(byteBuf.array());
                 return true;
             } catch (Exception ex) {
                 throw new SerializationException(ex.getMessage(), ex);
             } finally {
+                //统计客户端记录序列化请求的耗时和
                 recordSerializeRequest(requestCommand, invokeContext);
             }
         }
@@ -333,6 +337,7 @@ public class SofaRpcSerialization extends DefaultCustomSerializer {
         throws DeserializationException {
         if (response instanceof RpcResponseCommand) {
             RpcResponseCommand responseCommand = (RpcResponseCommand) response;
+            //获取序列化器
             byte serializer = response.getSerializer();
             byte[] content = responseCommand.getContent();
             if (content == null || content.length == 0) {
@@ -353,6 +358,7 @@ public class SofaRpcSerialization extends DefaultCustomSerializer {
                     (String) invokeContext.get(RemotingConstants.HEAD_GENERIC_TYPE));
 
                 Serializer rpcSerializer = com.alipay.sofa.rpc.codec.SerializerFactory.getSerializer(serializer);
+                //反序列化到sofaResponse中
                 rpcSerializer.decode(new ByteArrayWrapperByteBuf(responseCommand.getContent()), sofaResponse, header);
 
                 responseCommand.setResponseObject(sofaResponse);

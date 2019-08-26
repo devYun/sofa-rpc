@@ -32,9 +32,9 @@ public class HelloServiceImpl implements HelloService {
         LOGGER.info("Server receive: " + string);
 
         // 获取请求透传数据并打印
-        System.out.println("service receive reqBag -> " + RpcInvokeContext.getContext().getRequestBaggage("req_bag"));
+        //System.out.println("service receive reqBag -> " + RpcInvokeContext.getContext().getRequestBaggage("req_bag"));
         // 设置响应透传数据到当前线程的上下文中
-        RpcInvokeContext.getContext().putResponseBaggage("req_bag", "s2c");
+        //RpcInvokeContext.getContext().putResponseBaggage("req_bag", "s2c");
 
         return "hello " + string + " ！";
     }

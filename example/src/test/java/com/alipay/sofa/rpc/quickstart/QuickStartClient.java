@@ -34,14 +34,14 @@ public class QuickStartClient {
             .setInterfaceId(HelloService.class.getName()) // 指定接口
             .setProtocol("bolt") // 指定协议
             .setDirectUrl("bolt://127.0.0.1:12200") // 指定直连地址
-            .setConnectTimeout(10 * 1000).setSerialization("json");;
+            .setConnectTimeout(10 * 1000).setSerialization("jackson") ;
 
-        RpcInvokeContext.getContext().putRequestBaggage("req_bag", "a2bbb");
+        //RpcInvokeContext.getContext().putRequestBaggage("req_bag", "a2bbb");
 
         HelloService helloService = consumerConfig.refer();
 
         while (true) {
-            System.out.println("service receive reqBag -> " + RpcInvokeContext.getContext().getResponseBaggage("req_bag"));
+            //System.out.println("service receive reqBag -> " + RpcInvokeContext.getContext().getResponseBaggage("req_bag"));
             try {
                 LOGGER.info(helloService.sayHello("world"));
             } catch (Exception e) {
